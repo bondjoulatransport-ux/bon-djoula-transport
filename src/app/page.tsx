@@ -1,65 +1,40 @@
-import Image from "next/image";
+import { Bus, Users, MapPin, Banknote, Fuel, CalendarDays } from 'lucide-react'
+import { Sidebar } from '@/components/bon-djoula/sidebar'
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-screen bg-zinc-50">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[#1a3a2a]">🚌 Bon Djoula Transport</h1>
+          <p className="text-zinc-500 mt-1">Tableau de bord — Bienvenue !</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+          {[
+            { label: 'Véhicules', icon: Bus, href: '/vehicules', bg: 'bg-emerald-600', light: 'bg-emerald-50', text: 'text-emerald-600', desc: 'Gérer la flotte' },
+            { label: 'Chauffeurs', icon: Users, href: '/chauffeurs', bg: 'bg-blue-600', light: 'bg-blue-50', text: 'text-blue-600', desc: 'Gérer les chauffeurs' },
+            { label: 'Gares', icon: MapPin, href: '/gares', bg: 'bg-amber-500', light: 'bg-amber-50', text: 'text-amber-600', desc: '13 gares du réseau' },
+            { label: 'Programme', icon: CalendarDays, href: '/programme', bg: 'bg-violet-600', light: 'bg-violet-50', text: 'text-violet-600', desc: 'Planifier les trajets' },
+            { label: 'Recettes', icon: Banknote, href: '/recettes', bg: 'bg-pink-600', light: 'bg-pink-50', text: 'text-pink-600', desc: 'Suivi des recettes' },
+            { label: 'Carburant', icon: Fuel, href: '/carburant', bg: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600', desc: 'Dépenses carburant' },
+          ].map(({ label, icon: Icon, href, bg, light, text, desc }) => (
+            <a key={href} href={href}
+              className="bg-white border border-zinc-200 rounded-2xl p-6 flex flex-col gap-4 hover:shadow-lg transition-all hover:-translate-y-1">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-zinc-800 text-base">{label}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{desc}</p>
+              </div>
+              <div className={`text-xs font-medium ${text} ${light} rounded-lg px-2 py-1 w-fit`}>
+                Ouvrir →
+              </div>
+            </a>
+          ))}
         </div>
       </main>
     </div>
-  );
+  )
 }
