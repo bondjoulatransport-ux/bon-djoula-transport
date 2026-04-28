@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Bus, Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 export default function VehiculesPage() {
   const supabase = createClient()
@@ -24,13 +25,17 @@ export default function VehiculesPage() {
 
   async function ajouter() {
     if (!form.plaque || !form.modele || !form.nb_places) return
-    await supabase.from('vehicules').insert({ plaque: form.plaque, modele: form.modele, nb_places: Number(form.nb_places), gare_id: form.gare_id, statut: form.statut })
+    await supabase.from('vehicules').insert({
+      plaque: form.plaque, modele: form.modele,
+      nb_places: Number(form.nb_places), gare_id: form.gare_id, statut: form.statut
+    })
     setForm({ plaque: '', modele: '', nb_places: '', gare_id: gares[0]?.id || '', statut: 'actif' })
     setShow(false)
     charger()
   }
 
-  async function supprimer(id: string) {
+  async function supprimer(id: string, e: React.MouseEvent) {
+    e.preventDefault()
     await supabase.from('vehicules').delete().eq('id', id)
     charger()
   }
@@ -42,27 +47,33 @@ export default function VehiculesPage() {
           <h1 className="text-2xl font-bold text-[#1a3a2a]">🚌 Véhicules</h1>
           <p className="text-zinc-500 mt-1">{vehicules.length} véhicule(s) dans la flotte</p>
         </div>
-        <button onClick={() => setShow(!show)} className="flex items-center gap-2 bg-[#1a3a2a] text-[#f7b731] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#142e20]">
+        <button onClick={() => setShow(!show)}
+          className="flex items-center gap-2 bg-[#1a3a2a] text-[#f7b731] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#142e20]">
           <Plus className="w-4 h-4" /> Ajouter
         </button>
       </div>
+
       {show && (
         <div className="bg-white border border-zinc-200 rounded-2xl p-6 mb-6 grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-medium text-zinc-500">Plaque</label>
-            <input className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="AB 1234 CI" value={form.plaque} onChange={e => setForm({...form, plaque: e.target.value})} />
+            <input className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="AB 1234 CI"
+              value={form.plaque} onChange={e => setForm({...form, plaque: e.target.value})} />
           </div>
           <div>
             <label className="text-xs font-medium text-zinc-500">Modèle</label>
-            <input className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="Mercedes Sprinter" value={form.modele} onChange={e => setForm({...form, modele: e.target.value})} />
+            <input className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="Mercedes Sprinter"
+              value={form.modele} onChange={e => setForm({...form, modele: e.target.value})} />
           </div>
           <div>
             <label className="text-xs font-medium text-zinc-500">Nb places</label>
-            <input type="number" className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="18" value={form.nb_places} onChange={e => setForm({...form, nb_places: e.target.value})} />
+            <input type="number" className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" placeholder="18"
+              value={form.nb_places} onChange={e => setForm({...form, nb_places: e.target.value})} />
           </div>
           <div>
             <label className="text-xs font-medium text-zinc-500">Gare</label>
-            <select className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm" value={form.gare_id} onChange={e => setForm({...form, gare_id: e.target.value})}>
+            <select className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm"
+              value={form.gare_id} onChange={e => setForm({...form, gare_id: e.target.value})}>
               {gares.map(g => <option key={g.id} value={g.id}>{g.nom}</option>)}
             </select>
           </div>
@@ -72,13 +83,13 @@ export default function VehiculesPage() {
           </div>
         </div>
       )}
-      {loading ? (
-        <p className="text-zinc-400 text-sm">Chargement...</p>
-      ) : (
+
+      {loading ? <p className="text-zinc-400 text-sm">Chargement...</p> : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {vehicules.length === 0 && <p className="text-zinc-400 text-sm col-span-3">Aucun véhicule — cliquez sur Ajouter</p>}
           {vehicules.map(v => (
-            <div key={v.id} className="bg-white border border-zinc-200 rounded-2xl p-5 hover:shadow-md transition-all">
+            <Link key={v.id} href={`/vehicules/${v.id}`}
+              className="bg-white border border-zinc-200 rounded-2xl p-5 hover:shadow-md transition-all relative group cursor-pointer">
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                   <Bus className="w-5 h-5 text-emerald-600" />
@@ -89,11 +100,14 @@ export default function VehiculesPage() {
               <p className="text-sm text-zinc-500">{v.modele}</p>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-100">
                 <span className="text-xs text-zinc-400">{v.nb_places} places • {v.gare?.nom}</span>
-                <button onClick={() => supprimer(v.id)} className="text-red-400 hover:text-red-600">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-emerald-600">Voir bilan →</span>
+                  <button onClick={(e) => supprimer(v.id, e)} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

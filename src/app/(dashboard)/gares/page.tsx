@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 const couleursBase = [
   'bg-emerald-500','bg-blue-500','bg-amber-500','bg-violet-500',
@@ -14,14 +15,12 @@ export default function GaresPage() {
   const [gares, setGares] = useState<any[]>([])
   const [nouvelle, setNouvelle] = useState('')
   const [show, setShow] = useState(false)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => { charger() }, [])
 
   async function charger() {
     const { data } = await supabase.from('gares').select('*').order('nom')
     setGares(data || [])
-    setLoading(false)
   }
 
   async function ajouter() {
@@ -32,7 +31,8 @@ export default function GaresPage() {
     charger()
   }
 
-  async function supprimer(id: string) {
+  async function supprimer(id: string, e: React.MouseEvent) {
+    e.preventDefault()
     await supabase.from('gares').delete().eq('id', id)
     charger()
   }
@@ -64,22 +64,22 @@ export default function GaresPage() {
         </div>
       )}
 
-      {loading ? <p className="text-zinc-400 text-sm">Chargement...</p> : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {gares.map((gare, i) => (
-            <div key={gare.id} className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col items-center gap-3 hover:shadow-md transition-all hover:-translate-y-1 relative group">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${couleursBase[i % couleursBase.length]}`}>
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
-              <p className="font-semibold text-zinc-800 text-sm text-center">{gare.nom}</p>
-              <button onClick={() => supprimer(gare.id)}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {gares.map((gare, i) => (
+          <Link key={gare.id} href={`/gares/${gare.id}`}
+            className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col items-center gap-3 hover:shadow-md transition-all hover:-translate-y-1 relative group cursor-pointer">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${couleursBase[i % couleursBase.length]}`}>
+              <MapPin className="w-6 h-6 text-white" />
             </div>
-          ))}
-        </div>
-      )}
+            <p className="font-semibold text-zinc-800 text-sm text-center">{gare.nom}</p>
+            <p className="text-xs text-zinc-400">Voir le bilan →</p>
+            <button onClick={(e) => supprimer(gare.id, e)}
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }
