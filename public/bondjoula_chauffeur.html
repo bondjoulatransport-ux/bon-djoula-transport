@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0f0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bondjoula GPS">
+<title>Bondjoula — App Chauffeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0f0d; --surface: #111814; --card: #161d19; --border: #1e2b23;
+    --green: #00e87a; --green-dim: #00e87a18; --red: #ff4545; --amber: #f5a623;
+    --text: #e8f5ee; --muted: #5a7a65;
+    --font-head: 'Syne', sans-serif; --font-mono: 'Space Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-head); min-height: 100vh; max-width: 430px; margin: 0 auto; padding: 0 0 80px; }
+
+  header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); background: var(--surface); text-align: center; }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--green); }
+  .subtitle { font-size: 11px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 1px; margin-top: 2px; }
+
+  section { padding: 20px 20px 0; }
+  label { display: block; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; font-family: var(--font-mono); }
+  select, input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: var(--font-head); font-size: 14px; padding: 12px 14px; border-radius: 10px; outline: none; appearance: none; -webkit-appearance: none; }
+  select:focus, input:focus { border-color: var(--green); }
+
+  .gps-card { margin: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .gps-status { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .gps-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: all .5s; }
+  .gps-dot.active { background: var(--green); box-shadow: 0 0 10px var(--green); animation: gpspulse 1.5s infinite; }
+  @keyframes gpspulse { 0%,100%{box-shadow:0 0 6px var(--green)} 50%{box-shadow:0 0 18px var(--green)} }
+  .gps-dot.error { background: var(--red); }
+  .gps-label { font-size: 14px; font-weight: 700; }
+  .gps-coords { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .coord-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .coord-name { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 2px; }
+  .coord-val { font-size: 13px; font-family: var(--font-mono); color: var(--green); }
+  .speed-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .speed-val { font-size: 32px; font-weight: 800; color: var(--green); font-family: var(--font-mono); }
+  .speed-unit { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+
+  .btn { width: calc(100% - 40px); margin: 12px 20px 0; padding: 16px; border-radius: 12px; border: none; font-family: var(--font-head); font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; letter-spacing: -0.3px; }
+  .btn-start { background: var(--green); color: #0a0f0d; }
+  .btn-start:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-stop { background: var(--red-dim, #ff454522); color: var(--red); border: 1px solid var(--red); }
+  .btn-stop:hover { background: var(--red); color: white; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .log-box { margin: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; max-height: 160px; overflow-y: auto; }
+  .log-item { font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .log-item:last-child { border: none; }
+  .log-item .ok { color: var(--green); }
+  .log-item .err { color: var(--red); }
+
+  .install-hint { margin: 16px 20px; background: var(--green-dim); border: 1px solid var(--green); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--green); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<!-- ⚠️ CONFIGURATION : même valeurs que le dashboard -->
+<script>
+  const SUPABASE_URL = 'https://kuzmahsgkgayrifexlle.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_1zxowvxoNSlFaAYEDNlDOw_CtEYuuui';
+</script>
+
+<header>
+  <div class="logo">BONDJOULA <span>GPS</span></div>
+  <div class="subtitle">APP CHAUFFEUR</div>
+</header>
+
+<section>
+  <label>Sélectionne ton véhicule</label>
+  <select id="vehicule-select" onchange="onVehiculeChange()">
+    <option value="">— Choisir un véhicule —</option>
+  </select>
+</section>
+
+<div class="gps-card">
+  <div class="gps-status">
+    <div class="gps-dot" id="gps-dot"></div>
+    <div class="gps-label" id="gps-label">GPS en attente</div>
+  </div>
+  <div class="gps-coords">
+    <div class="coord-box"><div class="coord-name">LATITUDE</div><div class="coord-val" id="lat-val">—</div></div>
+    <div class="coord-box"><div class="coord-name">LONGITUDE</div><div class="coord-val" id="lng-val">—</div></div>
+  </div>
+  <div class="speed-box">
+    <div class="speed-val" id="speed-val">—</div>
+    <div class="speed-unit">km/h</div>
+  </div>
+</div>
+
+<button class="btn btn-start" id="btn-start" onclick="startTracking()" disabled>
+  Démarrer le suivi GPS
+</button>
+<button class="btn btn-stop" id="btn-stop" onclick="stopTracking()" style="display:none">
+  Arrêter le suivi
+</button>
+
+<div class="log-box" id="log-box"></div>
+
+<div class="install-hint">
+  💡 Pour ajouter cette app sur ton téléphone : menu du navigateur → "Ajouter à l'écran d'accueil"
+</div>
+
+<script>
+const { createClient } = supabase;
+const isConfigured = !SUPABASE_URL.includes('VOTRE');
+const client = isConfigured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let watchId = null;
+let selectedVehiculeId = null;
+let sendInterval = null;
+let lastPos = null;
+
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-box');
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  const time = new Date().toLocaleTimeString('fr-FR');
+  item.innerHTML = `[${time}] <span class="${type}">${msg}</span>`;
+  box.prepend(item);
+  if (box.children.length > 30) box.lastChild.remove();
+}
+
+async function loadVehicules() {
+  const sel = document.getElementById('vehicule-select');
+  if (!isConfigured) {
+    log('Mode démo — connecte Supabase pour charger tes véhicules', 'err');
+    // Démo
+    ['Bus 01 - Bouaké → Abidjan', 'Bus 02', 'Bus 03'].forEach((n, i) => {
+      const opt = document.createElement('option');
+      opt.value = 'demo-' + i;
+      opt.textContent = n;
+      sel.appendChild(opt);
+    });
+    return;
+  }
+  const { data } = await client.from('vehicules').select('id, nom, matricule').order('nom');
+  (data || []).forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = `${v.nom} (${v.matricule})`;
+    sel.appendChild(opt);
+  });
+}
+
+function onVehiculeChange() {
+  selectedVehiculeId = document.getElementById('vehicule-select').value;
+  document.getElementById('btn-start').disabled = !selectedVehiculeId;
+}
+
+function startTracking() {
+  if (!selectedVehiculeId) return;
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-stop').style.display = 'block';
+  document.getElementById('vehicule-select').disabled = true;
+  document.getElementById('gps-label').textContent = 'Localisation en cours...';
+
+  if (!navigator.geolocation) {
+    log('GPS non disponible sur cet appareil', 'err');
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
+    enableHighAccuracy: true,
+    maximumAge: 5000,
+    timeout: 10000
+  });
+
+  // Envoyer toutes les 5 secondes
+  sendInterval = setInterval(() => {
+    if (lastPos) sendPosition(lastPos);
+  }, 5000);
+
+  log('Suivi démarré', 'ok');
+}
+
+function stopTracking() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  if (sendInterval) clearInterval(sendInterval);
+  watchId = null; sendInterval = null; lastPos = null;
+
+  document.getElementById('btn-start').style.display = 'block';
+  document.getElementById('btn-stop').style.display = 'none';
+  document.getElementById('vehicule-select').disabled = false;
+  document.getElementById('gps-dot').className = 'gps-dot';
+  document.getElementById('gps-label').textContent = 'GPS arrêté';
+
+  // Mettre statut arrêté
+  if (isConfigured && selectedVehiculeId) {
+    client.from('vehicules').update({ statut: 'arrete' }).eq('id', selectedVehiculeId);
+  }
+  log('Suivi arrêté', 'err');
+}
+
+function onPosition(pos) {
+  const { latitude, longitude, speed, heading } = pos.coords;
+  lastPos = pos;
+  const speedKmh = speed ? Math.round(speed * 3.6) : 0;
+
+  document.getElementById('gps-dot').className = 'gps-dot active';
+  document.getElementById('gps-label').textContent = 'GPS actif — position reçue';
+  document.getElementById('lat-val').textContent = latitude.toFixed(6);
+  document.getElementById('lng-val').textContent = longitude.toFixed(6);
+  document.getElementById('speed-val').textContent = speedKmh;
+}
+
+function onGpsError(err) {
+  document.getElementById('gps-dot').className = 'gps-dot error';
+  document.getElementById('gps-label').textContent = 'Erreur GPS';
+  log('Erreur GPS: ' + err.message, 'err');
+}
+
+async function sendPosition(pos) {
+  const { latitude, longitude, speed, heading } = pos.coords;
+  const speedKmh = speed ? speed * 3.6 : 0;
+
+  if (!isConfigured) {
+    log(`[DÉMO] lat=${latitude.toFixed(4)}, lng=${longitude.toFixed(4)}, v=${Math.round(speedKmh)}km/h`, 'ok');
+    return;
+  }
+
+  try {
+    await client.from('positions').insert({
+      vehicule_id: selectedVehiculeId,
+      latitude, longitude,
+      vitesse: speedKmh,
+      cap: heading || 0
+    });
+    // Mettre à jour statut en_route
+    await client.from('vehicules').update({ statut: speedKmh > 5 ? 'en_route' : 'arrete' }).eq('id', selectedVehiculeId);
+    log(`Envoyé — ${speedKmh > 5 ? 'en route' : 'arrêté'} à ${Math.round(speedKmh)} km/h`, 'ok');
+  } catch (e) {
+    log('Erreur envoi: ' + e.message, 'err');
+  }
+}
+
+loadVehicules();
+</script>
+</body>
+</html>
