@@ -48,7 +48,7 @@ export default function Home() {
 
       {/* Boutons GPS */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <a href="/suivi" className="bg-[#0a0f0d] border border-[#00e87a33] rounded-2xl p-5 flex items-center gap-4 hover:border-[#00e87a] transition-all group">
+        <a href="/suivi" className="bg-gray-900 border border-[#00e87a33] rounded-2xl p-5 flex items-center gap-4 hover:border-[#00e87a] transition-all group">
           <div className="w-12 h-12 rounded-xl bg-[#00e87a18] flex items-center justify-center group-hover:bg-[#00e87a33] transition-all">
             <Map className="w-6 h-6 text-[#00e87a]" />
           </div>
@@ -60,7 +60,7 @@ export default function Home() {
             <div className="w-2 h-2 rounded-full bg-[#00e87a] animate-pulse"></div>
           </div>
         </a>
-        <a href="/chauffeur" className="bg-[#0a0f0d] border border-[#00e87a33] rounded-2xl p-5 flex items-center gap-4 hover:border-[#00e87a] transition-all group">
+        <a href="/chauffeur" className="bg-gray-900 border border-[#00e87a33] rounded-2xl p-5 flex items-center gap-4 hover:border-[#00e87a] transition-all group">
           <div className="w-12 h-12 rounded-xl bg-[#00e87a18] flex items-center justify-center group-hover:bg-[#00e87a33] transition-all">
             <Navigation className="w-6 h-6 text-[#00e87a]" />
           </div>
