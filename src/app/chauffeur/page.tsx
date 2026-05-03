@@ -2,7 +2,7 @@
 
 export default function ChauffeurPage() {
   return (
-    <div className="w-full h-[calc(100vh-48px)] rounded-xl overflow-hidden border border-zinc-200">
+    <div style={{ margin: '-24px', height: 'calc(100vh - 0px)' }}>
       <iframe
         src="/bondjoula_chauffeur.html"
         style={{ width: '100%', height: '100%', border: 'none' }}
