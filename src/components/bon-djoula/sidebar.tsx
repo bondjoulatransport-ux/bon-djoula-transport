@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Bus, Users, MapPin, CalendarDays, Banknote, Fuel, LayoutDashboard, LogOut, TrendingUp } from 'lucide-react'
+import { Bus, Users, MapPin, CalendarDays, Banknote, Fuel, LayoutDashboard, LogOut, TrendingUp, Map, Navigation } from 'lucide-react'
 
 const nav = [
   { href: '/',           label: 'Tableau de bord', icon: LayoutDashboard },
@@ -13,7 +13,9 @@ const nav = [
   { href: '/programme',  label: 'Programme',         icon: CalendarDays },
   { href: '/recettes',   label: 'Recettes',          icon: Banknote },
   { href: '/carburant',  label: 'Carburant',         icon: Fuel },
-  { href: '/bilan',      label: 'Bilan Global',      icon: TrendingUp },
+  { href: '/bilan', label: 'Bilan Global', icon: TrendingUp },
+  { href: '/suivi', label: 'Suivi GPS', icon: Map },
+  { href: '/chauffeur', label: 'App Chauffeur', icon: Navigation },
 ]
 
 export function Sidebar() {
