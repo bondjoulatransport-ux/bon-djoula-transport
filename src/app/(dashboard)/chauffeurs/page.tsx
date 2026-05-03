@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Users, Plus, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -10,7 +10,9 @@ export default function ChauffeursPage() {
   const [gares, setGares] = useState<any[]>([])
   const [form, setForm] = useState({ prenoms: '', nom: '', contact: '', gare_id: '', statut: 'actif' })
   const [show, setShow] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   useEffect(() => { charger() }, [])
 
@@ -23,23 +25,53 @@ export default function ChauffeursPage() {
     setLoading(false)
   }
 
-  async function ajouter() {
-    if (!form.nom.trim()) return
-    await supabase.from('chauffeurs').insert({
-      prenoms: form.prenoms.trim(),
-      nom: form.nom.trim(),
-      contact: form.contact.trim(),
-      gare_id: form.gare_id || null,
-      statut: form.statut
-    })
+  function ouvrirNouveau() {
+    setEditId(null)
     setForm({ prenoms: '', nom: '', contact: '', gare_id: gares[0]?.id || '', statut: 'actif' })
+    setShow(true)
+  }
+
+  function ouvrirEdition(c: any, e: React.MouseEvent) {
+    e.preventDefault()
+    setEditId(c.id)
+    setForm({
+      prenoms: c.prenoms || '',
+      nom: c.nom || '',
+      contact: c.contact || '',
+      gare_id: c.gare_id || gares[0]?.id || '',
+      statut: c.statut || 'actif'
+    })
+    setShow(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  async function enregistrer() {
+    if (!form.nom.trim()) return
+    if (editId) {
+      await supabase.from('chauffeurs').update({
+        prenoms: form.prenoms.trim(),
+        nom: form.nom.trim(),
+        contact: form.contact.trim(),
+        gare_id: form.gare_id || null,
+        statut: form.statut
+      }).eq('id', editId)
+    } else {
+      await supabase.from('chauffeurs').insert({
+        prenoms: form.prenoms.trim(),
+        nom: form.nom.trim(),
+        contact: form.contact.trim(),
+        gare_id: form.gare_id || null,
+        statut: form.statut
+      })
+    }
     setShow(false)
+    setEditId(null)
     charger()
   }
 
-  async function supprimer(id: string, e: React.MouseEvent) {
-    e.preventDefault()
+  async function supprimer(id: string) {
     await supabase.from('chauffeurs').delete().eq('id', id)
+    setConfirmDelete(null)
     charger()
   }
 
@@ -53,14 +85,19 @@ export default function ChauffeursPage() {
           <h1 className="text-2xl font-bold text-[#1a3a2a]">👤 Chauffeurs</h1>
           <p className="text-zinc-500 mt-1">{chauffeurs.length} chauffeur(s) enregistré(s)</p>
         </div>
-        <button onClick={() => setShow(!show)}
+        <button onClick={ouvrirNouveau}
           className="flex items-center gap-2 bg-[#1a3a2a] text-[#f7b731] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#142e20]">
           <Plus className="w-4 h-4" /> Ajouter
         </button>
       </div>
 
       {show && (
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 mb-6 grid grid-cols-2 gap-4">
+        <div className="bg-white border-2 border-[#1a3a2a] rounded-2xl p-6 mb-6 grid grid-cols-2 gap-4">
+          <div className="col-span-2 mb-1">
+            <h2 className="text-base font-bold text-[#1a3a2a]">
+              {editId ? '✏️ Modifier le chauffeur' : '➕ Nouveau chauffeur'}
+            </h2>
+          </div>
           <div>
             <label className="text-xs font-medium text-zinc-500">Prénoms</label>
             <input className="mt-1 w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm"
@@ -95,8 +132,23 @@ export default function ChauffeursPage() {
             </select>
           </div>
           <div className="col-span-2 flex gap-3">
-            <button onClick={ajouter} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Enregistrer</button>
-            <button onClick={() => setShow(false)} className="bg-zinc-100 text-zinc-700 px-4 py-2 rounded-lg text-sm">Annuler</button>
+            <button onClick={enregistrer} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+              {editId ? 'Mettre à jour' : 'Enregistrer'}
+            </button>
+            <button onClick={() => { setShow(false); setEditId(null) }} className="bg-zinc-100 text-zinc-700 px-4 py-2 rounded-lg text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full mx-4">
+            <h3 className="font-bold text-zinc-800 text-lg mb-2">Confirmer la suppression</h3>
+            <p className="text-zinc-500 text-sm mb-5">Ce chauffeur sera définitivement supprimé. Cette action est irréversible.</p>
+            <div className="flex gap-3">
+              <button onClick={() => supprimer(confirmDelete)} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex-1">Supprimer</button>
+              <button onClick={() => setConfirmDelete(null)} className="bg-zinc-100 text-zinc-700 px-4 py-2 rounded-lg text-sm flex-1">Annuler</button>
+            </div>
           </div>
         </div>
       )}
@@ -123,8 +175,12 @@ export default function ChauffeursPage() {
                 <span className="text-xs text-zinc-400">📞 {c.contact || '—'}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-blue-600">Voir bilan →</span>
-                  <button onClick={(e) => supprimer(c.id, e)}
-                    className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100">
+                  <button onClick={(e) => ouvrirEdition(c, e)}
+                    className="text-blue-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 p-1" title="Modifier">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); setConfirmDelete(c.id) }}
+                    className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 p-1" title="Supprimer">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

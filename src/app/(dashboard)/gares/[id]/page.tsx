@@ -5,32 +5,40 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { use } from 'react'
 
+const supabase = createClient()
+
+function getToday() { return new Date().toISOString().split('T')[0] }
+function getFirstDay() {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
+}
+
 export default function BilanGarePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const supabase = createClient()
   const [gare, setGare] = useState<any>(null)
   const [recettes, setRecettes] = useState<any[]>([])
-  const [dateDebut, setDateDebut] = useState('')
-  const [dateFin, setDateFin] = useState('')
   const [loading, setLoading] = useState(false)
   const [cherche, setCherche] = useState(false)
+  const [dateDebut, setDateDebut] = useState(getFirstDay())
+  const [dateFin, setDateFin] = useState(getToday())
 
   useEffect(() => {
     supabase.from('gares').select('*').eq('id', id).single()
       .then(({ data }) => setGare(data))
+    handleCharger(getFirstDay(), getToday())
   }, [id])
 
-  async function charger() {
-    if (!dateDebut || !dateFin) return
+  async function handleCharger(debut: string, fin: string) {
+    if (!debut || !fin || !id) return
     setLoading(true)
     setCherche(true)
-    const { data } = await supabase
-      .from('recettes')
-      .select('*, vehicule:vehicules(plaque), chauffeur:chauffeurs(nom, prenoms)')
-      .eq('gare_id', id)
-      .gte('date_recette', dateDebut)
-      .lte('date_recette', dateFin)
-      .order('date_recette', { ascending: false })
+   const { data, error } = await supabase.rpc('get_recettes_par_gare', {
+  p_gare_id: id,
+  p_debut: debut,
+  p_fin: fin
+})
+    console.log('Résultat:', data, 'Erreur:', error, 'gare_id:', id, 'debut:', debut, 'fin:', fin)
+   
     setRecettes(data || [])
     setLoading(false)
   }
@@ -62,7 +70,9 @@ export default function BilanGarePage({ params }: { params: Promise<{ id: string
           <input type="date" className="mt-1 block border border-zinc-300 rounded-lg px-3 py-2 text-sm"
             value={dateFin} onChange={e => setDateFin(e.target.value)} />
         </div>
-        <button onClick={charger} disabled={loading}
+        <button
+          onClick={() => handleCharger(dateDebut, dateFin)}
+          disabled={loading}
           className="bg-[#1a3a2a] text-[#f7b731] px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#142e20] disabled:opacity-50">
           {loading ? 'Chargement...' : 'Afficher le bilan'}
         </button>
@@ -98,8 +108,8 @@ export default function BilanGarePage({ params }: { params: Promise<{ id: string
                 {recettes.map(r => (
                   <tr key={r.id} className="border-b border-zinc-100 hover:bg-zinc-50">
                     <td className="px-4 py-3 text-zinc-600">{r.date_recette}</td>
-                    <td className="px-4 py-3 font-medium">{r.vehicule?.plaque}</td>
-                    <td className="px-4 py-3 text-zinc-500">{r.chauffeur?.prenoms} {r.chauffeur?.nom}</td>
+                    <td className="px-4 py-3 font-medium">{r.vehicule_plaque}</td>
+                    <td className="px-4 py-3 text-zinc-500">{r.chauffeur_prenoms} {r.chauffeur_nom}</td>
                     <td className="px-4 py-3 text-blue-600">{fmt(r.recette_gare)}</td>
                     <td className="px-4 py-3 text-violet-600">{fmt(r.recette_route)}</td>
                     <td className="px-4 py-3 font-bold text-emerald-600">{fmt((r.recette_gare || 0) + (r.recette_route || 0))}</td>

@@ -10,27 +10,32 @@ export default function BilanVehiculePage({ params }: { params: Promise<{ id: st
   const supabase = createClient()
   const [vehicule, setVehicule] = useState<any>(null)
   const [recettes, setRecettes] = useState<any[]>([])
-  const [dateDebut, setDateDebut] = useState('')
-  const [dateFin, setDateFin] = useState('')
-  const [loading, setLoading] = useState(false)
   const [cherche, setCherche] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  const fmt2 = (d: Date) => d.toISOString().split('T')[0]
+  const [dateDebut, setDateDebut] = useState(fmt2(firstDay))
+  const [dateFin, setDateFin] = useState(fmt2(today))
 
   useEffect(() => {
     supabase.from('vehicules').select('*, gare:gares(nom)').eq('id', id).single()
       .then(({ data }) => setVehicule(data))
+    charger(fmt2(firstDay), fmt2(today))
   }, [id])
 
-  async function charger() {
-    if (!dateDebut || !dateFin) return
+  async function charger(debut?: string, fin?: string) {
+    const d = debut || dateDebut
+    const f = fin || dateFin
+    if (!d || !f) return
     setLoading(true)
     setCherche(true)
-    const { data } = await supabase
-      .from('recettes')
-      .select('*, chauffeur:chauffeurs(nom, prenoms), gare:gares(nom)')
-      .eq('vehicule_id', id)
-      .gte('date_recette', dateDebut)
-      .lte('date_recette', dateFin)
-      .order('date_recette', { ascending: false })
+    const { data } = await supabase.rpc('get_recettes_par_vehicule', {
+      p_vehicule_id: id,
+      p_debut: d,
+      p_fin: f
+    })
     setRecettes(data || [])
     setLoading(false)
   }
@@ -62,7 +67,7 @@ export default function BilanVehiculePage({ params }: { params: Promise<{ id: st
           <input type="date" className="mt-1 block border border-zinc-300 rounded-lg px-3 py-2 text-sm"
             value={dateFin} onChange={e => setDateFin(e.target.value)} />
         </div>
-        <button onClick={charger} disabled={loading}
+        <button onClick={() => charger()} disabled={loading}
           className="bg-[#1a3a2a] text-[#f7b731] px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#142e20] disabled:opacity-50">
           {loading ? 'Chargement...' : 'Afficher le bilan'}
         </button>
@@ -98,8 +103,8 @@ export default function BilanVehiculePage({ params }: { params: Promise<{ id: st
                 {recettes.map(r => (
                   <tr key={r.id} className="border-b border-zinc-100 hover:bg-zinc-50">
                     <td className="px-4 py-3 text-zinc-600">{r.date_recette}</td>
-                    <td className="px-4 py-3 font-medium">{r.chauffeur?.prenoms} {r.chauffeur?.nom}</td>
-                    <td className="px-4 py-3 text-zinc-500">{r.gare?.nom}</td>
+                    <td className="px-4 py-3 font-medium">{r.chauffeur_prenoms} {r.chauffeur_nom}</td>
+                    <td className="px-4 py-3 text-zinc-500">{r.gare_nom}</td>
                     <td className="px-4 py-3 text-blue-600">{fmt(r.recette_gare)}</td>
                     <td className="px-4 py-3 text-violet-600">{fmt(r.recette_route)}</td>
                     <td className="px-4 py-3 font-bold text-emerald-600">{fmt((r.recette_gare || 0) + (r.recette_route || 0))}</td>
