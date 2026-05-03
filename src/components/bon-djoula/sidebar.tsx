@@ -14,8 +14,8 @@ const nav = [
   { href: '/recettes',   label: 'Recettes',          icon: Banknote },
   { href: '/carburant',  label: 'Carburant',         icon: Fuel },
   { href: '/bilan', label: 'Bilan Global', icon: TrendingUp },
-  { href: '/suivi', label: 'Suivi GPS', icon: Map },
-  { href: '/chauffeur', label: 'App Chauffeur', icon: Navigation },
+  { href: '/suivi', label: 'Suivi GPS', icon: Map, newTab: true },
+  { href: '/chauffeur', label: 'App Chauffeur', icon: Navigation, newTab: true },
 ]
 
 export function Sidebar() {
