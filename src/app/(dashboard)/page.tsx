@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#1a3a2a]">üöå Bon Djoula Transport</h1>
+        <h1 className="text-2xl font-bold text-[#1a3a2a]">≠É‹Ó Bon Djoula Transport</h1>
         <p className="text-zinc-400 text-sm mt-1 capitalize">{today}</p>
       </div>
 
@@ -53,8 +53,8 @@ export default function Home() {
             <Map className="w-6 h-6 text-[#00e87a]" />
           </div>
           <div>
-            <p className="font-bold text-white text-sm">Suivi GPS en temps r√©el</p>
-            <p className="text-xs text-[#5a7a65] mt-0.5">Carte de la flotte ‚Ä¢ positions live</p>
+            <p className="font-bold text-white text-sm">Suivi GPS en temps r+Æel</p>
+            <p className="text-xs text-[#5a7a65] mt-0.5">Carte de la flotte ‘«Û positions live</p>
           </div>
           <div className="ml-auto">
             <div className="w-2 h-2 rounded-full bg-[#00e87a] animate-pulse"></div>
@@ -66,7 +66,7 @@ export default function Home() {
           </div>
           <div>
             <p className="font-bold text-white text-sm">App Chauffeur GPS</p>
-            <p className="text-xs text-[#5a7a65] mt-0.5">D√©marrer le suivi ‚Ä¢ envoyer position</p>
+            <p className="text-xs text-[#5a7a65] mt-0.5">D+Æmarrer le suivi ‘«Û envoyer position</p>
           </div>
           <div className="ml-auto">
             <span className="text-[10px] text-[#00e87a] font-mono border border-[#00e87a33] rounded px-1.5 py-0.5">MOBILE</span>
@@ -93,7 +93,7 @@ export default function Home() {
 
           <div className="grid grid-cols-3 gap-4 mb-8">
             {[
-              { label: 'V√©hicules', value: stats.nb_vehicules, icon: Bus, color: 'text-emerald-600', bg: 'bg-emerald-50', href: '/vehicules' },
+              { label: 'V+Æhicules', value: stats.nb_vehicules, icon: Bus, color: 'text-emerald-600', bg: 'bg-emerald-50', href: '/vehicules' },
               { label: 'Chauffeurs', value: stats.nb_chauffeurs, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', href: '/chauffeurs' },
               { label: 'Gares', value: stats.nb_gares, icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50', href: '/gares' },
             ].map(({ label, value, icon: Icon, color, bg, href }) => (
@@ -115,8 +115,8 @@ export default function Home() {
                 <TrendingUp className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-zinc-700">B√©n√©fice net ce mois</p>
-                <p className="text-xs text-zinc-400">Recettes ‚àí Carburant</p>
+                <p className="text-sm font-semibold text-zinc-700">B+Æn+Æfice net ce mois</p>
+                <p className="text-xs text-zinc-400">Recettes ‘Í∆ Carburant</p>
               </div>
             </div>
             <p className={`text-2xl font-bold ${stats.recettes_mois - stats.carburant_mois >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -127,12 +127,12 @@ export default function Home() {
           {dernieres.length > 0 && (
             <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-100">
-                <p className="font-semibold text-zinc-700 text-sm">Derni√®res recettes saisies</p>
+                <p className="font-semibold text-zinc-700 text-sm">Derni+øres recettes saisies</p>
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50">
                   <tr>
-                    {['Date','V√©hicule','Gare','Montant'].map(h => (
+                    {['Date','V+Æhicule','Gare','Montant'].map(h => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-zinc-500">{h}</th>
                     ))}
                   </tr>
