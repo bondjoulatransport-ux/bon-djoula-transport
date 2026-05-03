@@ -6,16 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import { Bus, Users, MapPin, CalendarDays, Banknote, Fuel, LayoutDashboard, LogOut, TrendingUp, Map, Navigation } from 'lucide-react'
 
 const nav = [
-  { href: '/',           label: 'Tableau de bord', icon: LayoutDashboard, newTab: false },
-  { href: '/vehicules',  label: 'Véhicules',        icon: Bus,             newTab: false },
-  { href: '/chauffeurs', label: 'Chauffeurs',        icon: Users,           newTab: false },
-  { href: '/gares',      label: 'Gares',             icon: MapPin,          newTab: false },
-  { href: '/programme',  label: 'Programme',         icon: CalendarDays,    newTab: false },
-  { href: '/recettes',   label: 'Recettes',          icon: Banknote,        newTab: false },
-  { href: '/carburant',  label: 'Carburant',         icon: Fuel,            newTab: false },
-  { href: '/bilan',      label: 'Bilan Global',      icon: TrendingUp,      newTab: false },
-  { href: '/suivi',      label: 'Suivi GPS',         icon: Map,             newTab: true  },
-  { href: '/chauffeur',  label: 'App Chauffeur',     icon: Navigation,      newTab: true  },
+  { href: '/',           label: 'Tableau de bord', icon: LayoutDashboard },
+  { href: '/vehicules',  label: 'Véhicules',        icon: Bus             },
+  { href: '/chauffeurs', label: 'Chauffeurs',        icon: Users           },
+  { href: '/gares',      label: 'Gares',             icon: MapPin          },
+  { href: '/programme',  label: 'Programme',         icon: CalendarDays    },
+  { href: '/recettes',   label: 'Recettes',          icon: Banknote        },
+  { href: '/carburant',  label: 'Carburant',         icon: Fuel            },
+  { href: '/bilan',      label: 'Bilan Global',      icon: TrendingUp      },
+  { href: '/suivi',      label: 'Suivi GPS',         icon: Map             },
+  { href: '/chauffeur',  label: 'App Chauffeur',     icon: Navigation      },
 ]
 
 export function Sidebar() {
@@ -40,14 +40,12 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {nav.map(({ href, label, icon: Icon, newTab }) => {
+        {nav.map(({ href, label, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
           return (
             <Link
               key={href}
               href={href}
-              target={newTab ? '_blank' : '_self'}
-              rel={newTab ? 'noopener noreferrer' : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 active
                   ? 'bg-[#f7b731] text-[#1a3a2a] font-medium'
