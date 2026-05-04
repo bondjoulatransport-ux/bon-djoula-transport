@@ -142,7 +142,7 @@ async function loadVehicules() {
     });
     return;
   }
-  const { data } = await client.from('vehicules').select('id, plaque, modele').order('nom');
+  const { data } = await client.from('vehicules').select('id, plaque, modele').order('plaque');
   (data || []).forEach(v => {
     const opt = document.createElement('option');
     opt.value = v.id;
