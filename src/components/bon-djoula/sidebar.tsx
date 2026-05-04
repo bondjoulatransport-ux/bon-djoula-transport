@@ -3,16 +3,19 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Bus, Users, MapPin, CalendarDays, Banknote, Fuel, LayoutDashboard, LogOut, TrendingUp, Map, Navigation } from 'lucide-react'
+import { Bus, Users, MapPin, CalendarDays, Banknote, Fuel, LayoutDashboard, LogOut, TrendingUp, Map, Navigation, Receipt, Mail, Package } from 'lucide-react'
 
 const nav = [
   { href: '/',           label: 'Tableau de bord', icon: LayoutDashboard },
-  { href: '/vehicules',  label: 'Véhicules',        icon: Bus             },
+  { href: '/vehicules',  label: 'Vehicules',        icon: Bus             },
   { href: '/chauffeurs', label: 'Chauffeurs',        icon: Users           },
   { href: '/gares',      label: 'Gares',             icon: MapPin          },
   { href: '/programme',  label: 'Programme',         icon: CalendarDays    },
   { href: '/recettes',   label: 'Recettes',          icon: Banknote        },
+  { href: '/courriers',  label: 'Courriers',         icon: Mail            },
+  { href: '/bagages',    label: 'Bagages',           icon: Package         },
   { href: '/carburant',  label: 'Carburant',         icon: Fuel            },
+  { href: '/depenses',   label: 'Depenses',          icon: Receipt         },
   { href: '/bilan',      label: 'Bilan Global',      icon: TrendingUp      },
   { href: '/suivi',      label: 'Suivi GPS',         icon: Map             },
   { href: '/chauffeur',  label: 'App Chauffeur',     icon: Navigation      },
@@ -39,7 +42,7 @@ export function Sidebar() {
           <p className="text-[#8fbf9f] text-xs">Transport</p>
         </div>
       </div>
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {nav.map(({ href, label, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
           return (
@@ -64,7 +67,7 @@ export function Sidebar() {
           className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-[#8fbf9f] hover:bg-white/10 hover:text-white transition-colors"
         >
           <LogOut className="w-4 h-4" />
-          Déconnexion
+          Deconnexion
         </button>
       </div>
     </aside>
