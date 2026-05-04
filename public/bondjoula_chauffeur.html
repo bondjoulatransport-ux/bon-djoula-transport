@@ -142,11 +142,11 @@ async function loadVehicules() {
     });
     return;
   }
-  const { data } = await client.from('vehicules').select('id, nom, matricule').order('nom');
+  const { data } = await client.from('vehicules').select('id, plaque, modele').order('nom');
   (data || []).forEach(v => {
     const opt = document.createElement('option');
     opt.value = v.id;
-    opt.textContent = `${v.nom} (${v.matricule})`;
+    opt.textContent = `${v.plaque} - ${v.modele})`;
     sel.appendChild(opt);
   });
 }
