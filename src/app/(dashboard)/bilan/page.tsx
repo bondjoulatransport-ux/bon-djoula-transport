@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Banknote, Fuel } from 'lucide-react'
+import { Banknote, Fuel, ShoppingBag } from 'lucide-react'
 
 export default function BilanGlobalPage() {
   const supabase = createClient()
@@ -9,6 +9,7 @@ export default function BilanGlobalPage() {
   const [dateFin, setDateFin] = useState('')
   const [recettes, setRecettes] = useState<any[]>([])
   const [carburants, setCarburants] = useState<any[]>([])
+  const [depenses, setDepenses] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [cherche, setCherche] = useState(false)
 
@@ -23,15 +24,23 @@ export default function BilanGlobalPage() {
     const { data: c } = await supabase.from('carburants')
       .select('*, vehicule:vehicules(plaque)')
       .gte('date_dep', dateDebut).lte('date_dep', dateFin)
+    const { data: d } = await supabase.from('depenses')
+      .select('*, vehicule:vehicules(plaque)')
+      .gte('date_depense', dateDebut).lte('date_depense', dateFin)
+      .order('date_depense', { ascending: false })
     setRecettes(r || [])
     setCarburants(c || [])
+    setDepenses(d || [])
     setLoading(false)
   }
 
   const total_gare = recettes.reduce((s, r) => s + (r.recette_gare || 0), 0)
   const total_route = recettes.reduce((s, r) => s + (r.recette_route || 0), 0)
+  const total_recettes = total_gare + total_route
   const total_carb = carburants.reduce((s, c) => s + (c.montant || 0), 0)
-  const net = total_gare + total_route - total_carb
+  const total_depenses = depenses.reduce((s, d) => s + (d.montant || 0), 0)
+  const total_charges = total_carb + total_depenses
+  const net = total_recettes - total_charges
   const fmt = (n: number) => n.toLocaleString('fr-FR') + ' F'
 
   return (
@@ -60,30 +69,38 @@ export default function BilanGlobalPage() {
 
       {cherche && !loading && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {/* Résumé */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <div className="bg-blue-50 rounded-2xl p-4">
-              <p className="text-xs font-medium text-blue-600">Recette Gare</p>
-              <p className="text-xl font-bold text-blue-700 mt-1">{fmt(total_gare)}</p>
+              <p className="text-xs font-medium text-blue-600">Total Recettes</p>
+              <p className="text-xl font-bold text-blue-700 mt-1">{fmt(total_recettes)}</p>
+              <p className="text-xs text-blue-400 mt-1">Gare: {fmt(total_gare)} + Route: {fmt(total_route)}</p>
             </div>
-            <div className="bg-violet-50 rounded-2xl p-4">
-              <p className="text-xs font-medium text-violet-600">Recette Route</p>
-              <p className="text-xl font-bold text-violet-700 mt-1">{fmt(total_route)}</p>
+            <div className="bg-orange-50 rounded-2xl p-4">
+              <p className="text-xs font-medium text-orange-600">Carburant</p>
+              <p className="text-xl font-bold text-orange-700 mt-1">{fmt(total_carb)}</p>
             </div>
             <div className="bg-red-50 rounded-2xl p-4">
-              <p className="text-xs font-medium text-red-600">Carburant</p>
-              <p className="text-xl font-bold text-red-700 mt-1">{fmt(total_carb)}</p>
-            </div>
-            <div className={`rounded-2xl p-4 ${net >= 0 ? 'bg-emerald-50' : 'bg-orange-50'}`}>
-              <p className={`text-xs font-medium ${net >= 0 ? 'text-emerald-600' : 'text-orange-600'}`}>Bénéfice Net</p>
-              <p className={`text-xl font-bold mt-1 ${net >= 0 ? 'text-emerald-700' : 'text-orange-700'}`}>{fmt(net)}</p>
+              <p className="text-xs font-medium text-red-600">Dépenses</p>
+              <p className="text-xl font-bold text-red-700 mt-1">{fmt(total_depenses)}</p>
             </div>
           </div>
 
+          {/* Caisse nette */}
+          <div className={`rounded-2xl p-5 mb-6 flex items-center justify-between ${net >= 0 ? 'bg-emerald-600' : 'bg-red-600'}`}>
+            <div>
+              <p className="text-white text-sm font-medium opacity-80">💰 Ce qu'il y a dans la caisse</p>
+              <p className="text-white text-xs opacity-60 mt-0.5">Recettes − Carburant − Dépenses</p>
+            </div>
+            <p className="text-3xl font-bold text-white">{fmt(net)}</p>
+          </div>
+
+          {/* Tableau recettes */}
           {recettes.length > 0 && (
             <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden mb-4">
               <div className="px-5 py-4 border-b border-zinc-100 flex items-center gap-2">
                 <Banknote className="w-4 h-4 text-emerald-600" />
-                <p className="font-semibold text-zinc-700 text-sm">Recettes ({recettes.length})</p>
+                <p className="font-semibold text-zinc-700 text-sm">Recettes ({recettes.length}) — {fmt(total_recettes)}</p>
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50 border-b border-zinc-200">
@@ -109,11 +126,12 @@ export default function BilanGlobalPage() {
             </div>
           )}
 
+          {/* Tableau carburant */}
           {carburants.length > 0 && (
-            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden mb-4">
               <div className="px-5 py-4 border-b border-zinc-100 flex items-center gap-2">
                 <Fuel className="w-4 h-4 text-orange-600" />
-                <p className="font-semibold text-zinc-700 text-sm">Carburant ({carburants.length})</p>
+                <p className="font-semibold text-zinc-700 text-sm">Carburant ({carburants.length}) — {fmt(total_carb)}</p>
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50 border-b border-zinc-200">
@@ -138,7 +156,38 @@ export default function BilanGlobalPage() {
             </div>
           )}
 
-          {recettes.length === 0 && carburants.length === 0 && (
+          {/* Tableau dépenses */}
+          {depenses.length > 0 && (
+            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden mb-4">
+              <div className="px-5 py-4 border-b border-zinc-100 flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-red-600" />
+                <p className="font-semibold text-zinc-700 text-sm">Dépenses ({depenses.length}) — {fmt(total_depenses)}</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-zinc-50 border-b border-zinc-200">
+                  <tr>
+                    {['Date','Véhicule','Désignation','Montant','Avancé','Reste'].map(h => (
+                      <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-zinc-500">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {depenses.map(d => (
+                    <tr key={d.id} className="border-b border-zinc-100 hover:bg-zinc-50">
+                      <td className="px-4 py-3 text-zinc-600">{d.date_depense}</td>
+                      <td className="px-4 py-3 font-medium">{d.vehicule?.plaque || '—'}</td>
+                      <td className="px-4 py-3 text-zinc-700">{d.designation}</td>
+                      <td className="px-4 py-3 font-bold text-red-600">{fmt(d.montant)}</td>
+                      <td className="px-4 py-3 text-emerald-600">{fmt(d.montant_avance)}</td>
+                      <td className="px-4 py-3 font-bold text-orange-600">{fmt(d.reste_a_payer)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {recettes.length === 0 && carburants.length === 0 && depenses.length === 0 && (
             <p className="text-zinc-400 text-sm text-center py-8">Aucune donnée pour cette période</p>
           )}
         </>
